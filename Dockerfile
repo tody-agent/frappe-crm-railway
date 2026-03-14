@@ -114,8 +114,10 @@ USER frappe
 ARG FRAPPE_BRANCH=version-15
 ARG FRAPPE_PATH=https://github.com/frappe/frappe
 
-RUN export APPS_JSON_BASE64=$(base64 -w 0 /opt/frappe/apps.json) \
-    && bench init \
+# Set Node memory and yarn timeout to avoid build failures
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
+RUN bench init \
     --apps_path=/opt/frappe/apps.json \
     --frappe-branch=${FRAPPE_BRANCH} \
     --frappe-path=${FRAPPE_PATH} \
@@ -151,8 +153,8 @@ RUN chmod +x /home/frappe/entrypoint.sh \
 
 WORKDIR /home/frappe/frappe-bench
 
-# Persistent storage for sites data
-VOLUME ["/home/frappe/frappe-bench/sites"]
+# NOTE: VOLUME directive removed — Railway bans VOLUME in Dockerfiles
+# Attach a volume via Railway UI at /home/frappe/frappe-bench/sites
 
 # Railway will route traffic to this port
 EXPOSE 80
